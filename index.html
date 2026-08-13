@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>The Compendium of Truth</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --ink: #2b2620;
+    --ink-soft: #6b6252;
+    --ink-faint: #9a9082;
+    --parchment: #f5f0e6;
+    --parchment-2: #efe8d9;
+    --card: #ffffff;
+    --gold: #a8863f;
+    --gold-bright: #c19a51;
+    --gold-tint: #f3ebd7;
+    --line: #e7ddc9;
+    --line-soft: #f0e9db;
+    --shadow: rgba(80, 66, 40, 0.08);
+    --shadow-lift: rgba(80, 66, 40, 0.16);
+    --green: #5a8a5a;
+    --red: #c0563f;
+    --nav-h: 66px;
+    --header-h: 58px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { overscroll-behavior-y: none; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--parchment);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+    min-height: 100vh;
+  }
+  .serif { font-family: 'Fraunces', Georgia, serif; }
+
+  /* ---------- Sticky header ---------- */
+  .app-header {
+    position: sticky; top: 0; z-index: 40;
+    background: rgba(245,240,230,0.88); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 18px calc(12px + env(safe-area-inset-top)); padding-top: max(12px, env(safe-area-inset-top));
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .app-header .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .app-header .emblem { width: 30px; height: 30px; flex-shrink: 0; }
+  .app-header h1 { font-family: 'Fraunces', serif; font-size: 1.12rem; font-weight: 600; color: var(--ink); white-space: nowrap; letter-spacing: -0.01em; }
+  .app-header h1 .of { color: var(--gold); }
+  .lock-pill { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; color: var(--ink-faint); background: var(--parchment-2); border: 1px solid var(--line); padding: 5px 10px; border-radius: 100px; white-space: nowrap; cursor: pointer; }
+  .lock-pill.open { color: var(--green); border-color: #cfe0cf; background: #f0f6f0; }
+
+  /* cloud status - subtle line under header */
+  .cloud-status { text-align: center; font-size: 0.68rem; padding: 5px; letter-spacing: 0.02em; background: var(--parchment); border-bottom: 1px solid var(--line-soft); }
+  .cloud-status.on { color: var(--green); }
+  .cloud-status.off { color: var(--red); }
+  .cloud-status.local { color: var(--gold); }
+
+  /* ---------- Scroll area ---------- */
+  .screen { max-width: 640px; margin: 0 auto; padding: 16px 18px 30px; }
+  .screen.hidden { display: none; }
+
+  /* verse-of-day style hero card on quotes screen */
+  .feature-card {
+    background: linear-gradient(150deg, var(--ink) 0%, #3a3428 100%);
+    color: var(--parchment); border-radius: 20px; padding: 26px 24px; margin-bottom: 20px;
+    box-shadow: 0 8px 26px var(--shadow-lift); position: relative; overflow: hidden;
+  }
+  .feature-card::after { content: '\201C'; position: absolute; top: -18px; right: 6px; font-family: 'Fraunces', serif; font-size: 8rem; color: rgba(193,154,81,0.16); line-height: 1; }
+  .feature-card .fc-label { font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-bright); font-weight: 600; margin-bottom: 12px; }
+  .feature-card .fc-text { font-family: 'Fraunces', serif; font-size: 1.3rem; line-height: 1.45; font-weight: 400; position: relative; z-index: 1; }
+  .feature-card .fc-attr { margin-top: 14px; font-size: 0.9rem; color: var(--gold-bright); font-style: italic; }
+  .feature-card .fc-empty { font-family: 'Fraunces', serif; font-size: 1.15rem; }
+
+  /* search */
+  .search-wrap { position: relative; margin-bottom: 16px; }
+  .search-wrap svg { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--ink-faint); }
+  #search {
+    width: 100%; padding: 13px 16px 13px 44px; border: 1px solid var(--line); border-radius: 14px;
+    background: var(--card); font-family: inherit; font-size: 0.98rem; color: var(--ink); box-shadow: 0 1px 4px var(--shadow);
+  }
+  #search:focus { outline: none; border-color: var(--gold); }
+
+  /* category chips - horizontal scroll */
+  .chip-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 12px; margin: 0 -16px 6px; padding-left: 16px; padding-right: 16px; scrollbar-width: none; }
+  .chip-scroll::-webkit-scrollbar { display: none; }
+  .chip { flex-shrink: 0; padding: 8px 15px; border-radius: 100px; border: 1px solid var(--line); background: var(--card); color: var(--ink-soft); font-size: 0.85rem; cursor: pointer; white-space: nowrap; font-family: inherit; transition: all 0.12s ease; }
+  .chip:active { transform: scale(0.96); }
+  .chip.active { background: var(--ink); color: var(--parchment); border-color: var(--ink); font-weight: 500; }
+  .chip .count { opacity: 0.55; font-size: 0.76rem; margin-left: 3px; }
+  .chip.active .count { opacity: 0.7; }
+
+  .list-meta { font-size: 0.8rem; color: var(--ink-faint); margin: 4px 2px 14px; }
+
+  /* quote cards */
+  .q-list { display: flex; flex-direction: column; gap: 16px; }
+  .quote-card {
+    background: var(--card); border: 1px solid var(--line-soft); border-radius: 18px;
+    padding: 26px 24px 22px; box-shadow: 0 2px 12px var(--shadow); cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease; position: relative;
+  }
+  .quote-card:active { transform: scale(0.988); box-shadow: 0 1px 5px var(--shadow); }
+  .quote-card .qc-text { font-family: 'Fraunces', serif; font-size: 1.28rem; line-height: 1.55; color: var(--ink); }
+  .quote-card .qc-attr { margin-top: 16px; font-size: 0.95rem; color: var(--ink-soft); font-weight: 500; }
+  .quote-card .qc-attr .qc-src { display: block; font-size: 0.85rem; color: var(--ink-faint); font-weight: 400; font-style: italic; margin-top: 2px; }
+  .quote-card .qc-tags { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 7px; }
+  .quote-card .qc-tag { font-size: 0.75rem; background: var(--gold-tint); color: var(--gold); padding: 4px 12px; border-radius: 100px; font-weight: 500; }
+  .quote-card .qc-note { margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--line-soft); font-size: 0.9rem; color: var(--ink-soft); }
+  .quote-card .qc-fav { position: absolute; top: 18px; right: 18px; font-size: 1.05rem; color: var(--gold-bright); }
+
+  .empty-state { text-align: center; color: var(--ink-faint); padding: 50px 24px; font-family: 'Fraunces', serif; font-size: 1.05rem; line-height: 1.6; }
+  .empty-state strong { color: var(--gold); }
+
+  /* section headers for books/contributors */
+  .screen-title { font-family: 'Fraunces', serif; font-size: 1.5rem; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .screen-sub { font-size: 0.9rem; color: var(--ink-soft); font-style: italic; margin-bottom: 20px; }
+
+  /* books */
+  .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 22px; }
+  .book-card { background: transparent; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: default; }
+  .book-cover-wrap { position: relative; width: 100%; display: flex; justify-content: center; padding: 14px 14px 0; border-radius: 18px; background: var(--card); border: 1px solid var(--line-soft); box-shadow: 0 3px 16px var(--shadow); overflow: hidden; }
+  .book-cover-wrap::before { content: ''; position: absolute; top: -30%; left: -20%; width: 140%; height: 90%; background: radial-gradient(circle at 50% 0%, var(--glow, rgba(193,154,81,0.35)), transparent 65%); pointer-events: none; }
+  .book-cover, .book-cover-ph { position: relative; width: 78%; aspect-ratio: 2/3; border-radius: 8px; box-shadow: 0 6px 18px rgba(60,48,28,0.28); margin-bottom: 14px; }
+  .book-cover { object-fit: cover; background: var(--parchment-2); }
+  .book-cover-ph { background: linear-gradient(150deg, var(--parchment-2), var(--gold-tint)); display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+  .book-author { color: var(--ink-soft); font-size: 0.85rem; margin-top: 12px; }
+  .book-author b { color: var(--ink); font-weight: 600; font-style: normal; }
+  .book-author .by { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); font-weight: 600; }
+  .book-preview-btn { margin-top: 10px; background: transparent; border: 1px solid var(--line); color: var(--ink); font-family: inherit; font-size: 0.85rem; font-weight: 600; padding: 8px 22px; border-radius: 100px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .book-preview-btn:active { background: var(--parchment-2); border-color: var(--gold); }
+  .book-edit-mini { position: absolute; top: 8px; right: 8px; display: flex; gap: 5px; z-index: 2; }
+  .book-edit-mini button { background: rgba(255,255,255,0.85); border: 1px solid var(--line); border-radius: 7px; width: 26px; height: 26px; font-size: 0.7rem; color: var(--ink-soft); cursor: pointer; }
+  /* book preview popup */
+  .bp-cover { width: 120px; aspect-ratio: 2/3; border-radius: 8px; object-fit: cover; box-shadow: 0 6px 18px rgba(60,48,28,0.3); margin: 0 auto 16px; display: block; background: var(--parchment-2); }
+  .bp-cover-ph { width: 120px; aspect-ratio: 2/3; border-radius: 8px; margin: 0 auto 16px; background: linear-gradient(150deg, var(--parchment-2), var(--gold-tint)); display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+  .bp-title { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 600; color: var(--ink); text-align: center; line-height: 1.2; }
+  .bp-author { text-align: center; color: var(--ink-soft); font-style: italic; margin-top: 4px; }
+  .bp-cat { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 14px; }
+  .bp-cat span { font-size: 0.75rem; background: var(--gold-tint); color: var(--gold); padding: 4px 12px; border-radius: 100px; font-weight: 500; }
+  .bp-desc { margin-top: 16px; color: var(--ink); font-size: 0.98rem; line-height: 1.6; }
+  .bp-desc.empty { color: var(--ink-faint); font-style: italic; }
+
+  /* contributors */
+  .contrib-wrap { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  @media (min-width: 620px) { .contrib-wrap { grid-template-columns: 1fr 1fr; } }
+  .contrib-card { background: var(--card); border: 1px solid var(--line-soft); border-radius: 18px; padding: 18px; box-shadow: 0 2px 12px var(--shadow); display: flex; gap: 14px; position: relative; }
+  .contrib-avatar { width: 72px; height: 72px; border-radius: 16px; flex-shrink: 0; object-fit: cover; background: var(--parchment-2); }
+  .contrib-avatar-ph { width: 72px; height: 72px; border-radius: 16px; flex-shrink: 0; background: linear-gradient(150deg, var(--gold-tint), var(--parchment-2)); display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-size: 1.6rem; color: var(--gold); font-weight: 600; }
+  .contrib-body { flex: 1; min-width: 0; padding-right: 56px; }
+  .contrib-name { font-family: 'Fraunces', serif; font-size: 1.12rem; font-weight: 600; color: var(--ink); line-height: 1.25; word-break: break-word; }
+  .contrib-role { font-size: 0.82rem; color: var(--gold); font-weight: 600; letter-spacing: 0.02em; margin-top: 3px; }
+  .contrib-count { font-size: 0.82rem; color: var(--ink-soft); margin-top: 8px; display: flex; align-items: center; gap: 5px; }
+  .contrib-actions { margin-top: 12px; display: flex; gap: 8px; }
+  .contrib-connect { font-size: 0.82rem; font-weight: 600; color: var(--card); background: var(--gold); padding: 7px 16px; border-radius: 100px; text-decoration: none; display: inline-block; }
+  .contrib-connect:active { background: var(--gold-bright); }
+  .contrib-edit { position: absolute; top: 14px; right: 14px; display: flex; gap: 6px; }
+  .contrib-edit button { background: var(--parchment-2); border: none; border-radius: 8px; width: 28px; height: 28px; font-size: 0.75rem; color: var(--ink-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .contrib-edit button:active { color: var(--red); }
+  /* photo upload box */
+  .photo-upload { width: 110px; height: 110px; border-radius: 16px; border: 2px dashed var(--line); background: var(--parchment-2); display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
+  .photo-upload:active { border-color: var(--gold); }
+  .photo-upload img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-ph { font-size: 0.78rem; color: var(--ink-faint); text-align: center; padding: 0 8px; line-height: 1.4; }
+  .link-btn { color: var(--gold); font-weight: 600; cursor: pointer; text-decoration: underline; }
+
+  /* ---------- Floating add button ---------- */
+  .fab {
+    position: fixed; right: 18px; bottom: calc(var(--nav-h) + 16px + env(safe-area-inset-bottom)); z-index: 45;
+    width: 56px; height: 56px; border-radius: 50%; border: none; cursor: pointer;
+    background: var(--gold); color: #fff; font-size: 1.7rem; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 20px rgba(168,134,63,0.42); transition: transform 0.12s ease;
+  }
+  .fab:active { transform: scale(0.92); }
+
+  /* ---------- Bottom nav ---------- */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 46;
+    background: rgba(255,255,255,0.92); backdrop-filter: blur(14px);
+    border-top: 1px solid var(--line);
+    display: flex; justify-content: space-around; align-items: stretch;
+    height: calc(var(--nav-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
+  }
+  .nav-item { flex: 1; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--ink-faint); font-family: inherit; font-size: 0.68rem; font-weight: 500; padding-top: 8px; }
+  .nav-item svg { width: 23px; height: 23px; }
+  .nav-item.active { color: var(--gold); }
+  .nav-item .nav-label { letter-spacing: 0.01em; }
+
+  /* ---------- Modals / sheets ---------- */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(43,38,32,0.5); z-index: 60; align-items: flex-end; justify-content: center; }
+  .overlay.show { display: flex; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* bottom sheet */
+  .sheet {
+    background: var(--parchment); width: 100%; max-width: 560px; border-radius: 22px 22px 0 0;
+    padding: 10px 20px calc(24px + env(safe-area-inset-bottom)); max-height: 92vh; overflow-y: auto;
+    animation: slideUp 0.28s cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .sheet-handle { width: 38px; height: 4px; background: var(--line); border-radius: 100px; margin: 6px auto 16px; }
+  .sheet h2 { font-family: 'Fraunces', serif; font-size: 1.3rem; font-weight: 600; color: var(--ink); margin-bottom: 18px; }
+
+  /* action sheet (tap a quote) */
+  .action-sheet .as-quote { font-family: 'Fraunces', serif; font-size: 1.05rem; color: var(--ink-soft); line-height: 1.45; padding: 4px 4px 18px; border-bottom: 1px solid var(--line); margin-bottom: 8px; max-height: 30vh; overflow-y: auto; }
+  .action-row { display: flex; align-items: center; gap: 15px; width: 100%; background: none; border: none; padding: 15px 6px; font-family: inherit; font-size: 1.02rem; color: var(--ink); cursor: pointer; border-radius: 12px; text-align: left; }
+  .action-row:active { background: var(--parchment-2); }
+  .action-row svg { width: 22px; height: 22px; color: var(--gold); flex-shrink: 0; }
+  .action-row.danger { color: var(--red); }
+  .action-row.danger svg { color: var(--red); }
+  .img-preview-wrap { text-align: center; margin-bottom: 16px; }
+  #imgPreview { width: 100%; max-width: 260px; border-radius: 14px; box-shadow: 0 6px 22px var(--shadow-lift); aspect-ratio: 9/16; object-fit: cover; background: var(--parchment-2); }
+  .img-style-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 6px; }
+  .img-style { flex: 1; max-width: 110px; padding: 9px; border-radius: 100px; border: 1px solid var(--line); background: var(--card); color: var(--ink-soft); font-family: inherit; font-size: 0.85rem; cursor: pointer; }
+  .img-style.active { background: var(--ink); color: var(--parchment); border-color: var(--ink); font-weight: 500; }
+  .img-hint { font-size: 0.76rem; color: var(--ink-faint); text-align: center; margin-top: 12px; line-height: 1.5; }
+
+  /* form fields */
+  .field { margin-bottom: 15px; }
+  .field label { display: block; font-size: 0.76rem; color: var(--ink-soft); margin-bottom: 6px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600; }
+  .field input, .field textarea {
+    width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px;
+    font-family: inherit; font-size: 1rem; background: var(--card); color: var(--ink); resize: vertical;
+  }
+  .field input:focus, .field textarea:focus { outline: none; border-color: var(--gold); }
+  .field textarea { min-height: 90px; }
+  .field .hint { font-size: 0.76rem; color: var(--ink-faint); margin-top: 5px; text-transform: none; letter-spacing: 0; }
+  .cat-picker { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cat-picker .chip { flex-shrink: 1; }
+  .sheet-actions { display: flex; gap: 10px; margin-top: 22px; }
+  .btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; }
+  .btn-primary { background: var(--gold); color: #fff; }
+  .btn-primary:active { background: var(--gold-bright); }
+  .btn-ghost { background: transparent; color: var(--ink-soft); border: 1px solid var(--line); }
+
+  /* toolbar overflow menu (backup/restore/print) */
+  .menu-list { display: flex; flex-direction: column; gap: 2px; }
+  .menu-row { display: flex; align-items: center; gap: 14px; padding: 15px 6px; background: none; border: none; font-family: inherit; font-size: 1.02rem; color: var(--ink); cursor: pointer; border-radius: 12px; text-align: left; width: 100%; }
+  .menu-row:active { background: var(--parchment-2); }
+  .menu-row svg { width: 21px; height: 21px; color: var(--gold); }
+
+  @media (min-width: 600px) {
+    .feature-card { padding: 34px 40px; }
+    .feature-card .fc-text { font-size: 1.55rem; }
+  }
+
+  /* ===== Mission scrollytelling ===== */
+  .mission { position: fixed; inset: 0; z-index: 200; background: #1a1712; color: #f0e9db; overflow-y: auto; scroll-snap-type: y mandatory; display: none; }
+  .mission.show { display: block; }
+  .mission-skip { position: fixed; top: 16px; right: 16px; z-index: 210; background: rgba(255,255,255,0.08); border: 1px solid rgba(240,233,219,0.25); color: #f0e9db; font-family: inherit; font-size: 0.82rem; padding: 8px 16px; border-radius: 100px; cursor: pointer; backdrop-filter: blur(6px); }
+  .mission-skip:active { background: rgba(255,255,255,0.16); }
+  .m-scene { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 40px 26px; scroll-snap-align: start; }
+  .m-inner { max-width: 560px; width: 100%; text-align: center; opacity: 0; transform: translateY(28px); transition: opacity 0.9s ease, transform 0.9s ease; }
+  .m-scene.visible .m-inner { opacity: 1; transform: translateY(0); }
+  .m-flame { margin-bottom: 22px; display: flex; justify-content: center; }
+  .m-title { font-size: clamp(2.4rem, 9vw, 3.6rem); font-weight: 500; line-height: 1.05; color: #f5f0e6; letter-spacing: -0.01em; }
+  .m-creed { font-style: italic; font-size: clamp(1rem, 3.4vw, 1.2rem); color: #c19a51; max-width: 460px; margin: 24px auto 0; line-height: 1.6; }
+  .m-eyebrow { display: block; font-size: 0.72rem; letter-spacing: 0.24em; text-transform: uppercase; color: #c19a51; font-weight: 600; margin-bottom: 18px; }
+  .m-h2 { font-size: clamp(1.9rem, 6.5vw, 2.8rem); font-weight: 500; color: #f5f0e6; line-height: 1.12; letter-spacing: -0.01em; }
+  .m-body { font-size: clamp(1.05rem, 3vw, 1.22rem); color: #cdc4b4; line-height: 1.65; margin-top: 20px; }
+  .m-mission { font-family: 'Fraunces', serif; font-style: italic; color: #e8dcc4; font-size: clamp(1.15rem, 3.6vw, 1.5rem); max-width: 520px; margin: 0 auto; }
+  .m-final .m-inner { opacity: 1; transform: none; }
+  .m-vault-btn { margin-top: 34px; background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: inline-flex; transition: transform 0.2s ease, filter 0.2s ease; }
+  .m-vault-btn svg { display: block; filter: drop-shadow(0 4px 16px rgba(193,154,81,0.28)); }
+  .m-vault-btn:hover { transform: scale(1.05); }
+  .m-vault-btn:hover svg { filter: drop-shadow(0 6px 22px rgba(193,154,81,0.5)); }
+  .m-vault-ring { transition: transform 0.9s cubic-bezier(0.5,0,0.2,1); transform-origin: 100px 100px; }
+  .m-vault-btn:hover .m-vault-ring { transform: rotate(28deg); }
+  .m-vault-btn.opening { animation: vaultOpen 0.85s cubic-bezier(0.5,0,0.2,1) forwards; }
+  .m-vault-btn.opening .m-vault-ring { transform: rotate(150deg); }
+  @keyframes vaultOpen {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.12); filter: drop-shadow(0 0 26px rgba(193,154,81,0.6)); }
+    100% { transform: scale(1.35); opacity: 0; }
+  }
+  .m-vault-hint { margin-top: 20px; font-size: 0.9rem; color: #c19a51; letter-spacing: 0.04em; font-family: 'Inter', sans-serif; }
+  .m-enter { margin-top: 34px; background: #c19a51; color: #241405; border: none; font-family: inherit; font-size: 1rem; font-weight: 600; padding: 15px 34px; border-radius: 100px; cursor: pointer; box-shadow: 0 6px 22px rgba(193,154,81,0.3); }
+  .m-enter:active { transform: scale(0.97); }
+  .m-scroll-cue { margin-top: 48px; display: flex; flex-direction: column; align-items: center; gap: 8px; color: #8a8071; font-size: 0.78rem; letter-spacing: 0.08em; }
+  .m-arrow { width: 18px; height: 18px; border-right: 2px solid #c19a51; border-bottom: 2px solid #c19a51; transform: rotate(45deg); animation: mbob 1.8s ease-in-out infinite; }
+  @keyframes mbob { 0%,100%{ transform: rotate(45deg) translate(0,0); } 50%{ transform: rotate(45deg) translate(3px,3px); } }
+  @media (prefers-reduced-motion: reduce) {
+    .m-inner { opacity: 1 !important; transform: none !important; }
+    .m-arrow { animation: none; }
+  }
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<!-- ===== MISSION / ABOUT SCROLLYTELLING ===== -->
+<div class="mission" id="mission">
+  <button class="mission-skip" onclick="closeMission()">Enter →</button>
+
+  <section class="m-scene m-hero">
+    <div class="m-inner">
+      <div class="m-flame">
+        <svg viewBox="0 0 200 200" width="78" height="78" aria-hidden="true">
+          <circle cx="100" cy="100" r="92" fill="none" stroke="#c19a51" stroke-width="5"/>
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#c19a51" stroke-width="1.5"/>
+          <g stroke="#c19a51" stroke-width="5" stroke-linecap="butt"><line x1="100.0" y1="3.0" x2="100.0" y2="12.0"/><line x1="148.5" y1="16.0" x2="144.0" y2="23.8"/><line x1="184.0" y1="51.5" x2="176.2" y2="56.0"/><line x1="197.0" y1="100.0" x2="188.0" y2="100.0"/><line x1="184.0" y1="148.5" x2="176.2" y2="144.0"/><line x1="148.5" y1="184.0" x2="144.0" y2="176.2"/><line x1="100.0" y1="197.0" x2="100.0" y2="188.0"/><line x1="51.5" y1="184.0" x2="56.0" y2="176.2"/><line x1="16.0" y1="148.5" x2="23.8" y2="144.0"/><line x1="3.0" y1="100.0" x2="12.0" y2="100.0"/><line x1="16.0" y1="51.5" x2="23.8" y2="56.0"/><line x1="51.5" y1="16.0" x2="56.0" y2="23.8"/></g>
+          <g transform="translate(100,104) scale(1.08)">
+            <path d="M0,-58 C 7,-48 11,-42 11,-34 C 11,-26 6,-21 0,-21 C -6,-21 -11,-26 -11,-34 C -11,-42 -7,-48 0,-58 Z" fill="#c19a51"/>
+            <path d="M0,-49 C 4,-42 6,-38 6,-33 C 6,-28 3,-25 0,-25 C -3,-25 -6,-28 -6,-33 C -6,-38 -4,-42 0,-49 Z" fill="#1a1712"/>
+            <path d="M-40,-8 C -27,-15 -10,-15 0,-10 C 10,-15 27,-15 40,-8 L40,26 C 27,19 10,19 0,25 C -10,19 -27,19 -40,26 Z" fill="#c19a51"/>
+            <path d="M0,-10 L0,25" stroke="#1a1712" stroke-width="2.4" fill="none"/>
+          </g>
+        </svg>
+      </div>
+      <h1 class="m-title serif">The Compendium<br>of Truth</h1>
+      <p class="m-creed serif">"All truth has God as its source; the entire body of knowledge is consistent with, and not contrary to, God's revelation."</p>
+      <div class="m-scroll-cue"><span>scroll</span><span class="m-arrow"></span></div>
+    </div>
+  </section>
+
+  <section class="m-scene">
+    <div class="m-inner">
+      <span class="m-eyebrow">The call</span>
+      <h2 class="m-h2 serif">You were made for more than noise.</h2>
+      <p class="m-body">The feed is loud — hustle, ego, endless noise. But you feel the pull toward something with weight. Trade the shallow for the substantial, and change what you carry into the world.</p>
+    </div>
+  </section>
+
+  <section class="m-scene">
+    <div class="m-inner">
+      <span class="m-eyebrow">The depth</span>
+      <h2 class="m-h2 serif">Truth you'll actually return to.</h2>
+      <p class="m-body">Deep wisdom shouldn't feel distant or dull. Here it's beautiful, accessible, and worth passing on — truth that sinks in, and that you'll be proud to share.</p>
+    </div>
+  </section>
+
+  <section class="m-scene">
+    <div class="m-inner">
+      <span class="m-eyebrow">The breadth</span>
+      <h2 class="m-h2 serif">Ready for every field of life.</h2>
+      <p class="m-body">Theology and business. Apologetics and relationships. Philosophy, science, manhood, the practical craft of living. A whole man needs a whole toolkit — so no adventure, argument, or crossroads catches you unprepared.</p>
+    </div>
+  </section>
+
+  <section class="m-scene">
+    <div class="m-inner">
+      <span class="m-eyebrow">The Source</span>
+      <h2 class="m-h2 serif">Rooted, not self-made.</h2>
+      <p class="m-body">Your strength isn't hollow grit or borrowed bravado. Every insight, from every field, traces back to the Father, Son, and Holy Spirit — one Author, one fabric of truth, holding it all together.</p>
+    </div>
+  </section>
+
+  <section class="m-scene m-final">
+    <div class="m-inner">
+      <p class="m-body m-mission">Deep, well-rounded wisdom for every field of life — so you can meet any adventure, stand against any adversary, hold firm at every crossroads, and answer any culture, with God as your one true Source.</p>
+      <button class="m-vault-btn" onclick="openVault(this)" aria-label="Open the Compendium">
+        <svg viewBox="0 0 200 200" width="118" height="118" aria-hidden="true">
+          <circle cx="100" cy="100" r="92" fill="none" stroke="#c19a51" stroke-width="5"/>
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#c19a51" stroke-width="1.5"/>
+          <g class="m-vault-ring" stroke="#c19a51" stroke-width="5"><line x1="100.0" y1="3.0" x2="100.0" y2="12.0"/><line x1="148.5" y1="16.0" x2="144.0" y2="23.8"/><line x1="184.0" y1="51.5" x2="176.2" y2="56.0"/><line x1="197.0" y1="100.0" x2="188.0" y2="100.0"/><line x1="184.0" y1="148.5" x2="176.2" y2="144.0"/><line x1="148.5" y1="184.0" x2="144.0" y2="176.2"/><line x1="100.0" y1="197.0" x2="100.0" y2="188.0"/><line x1="51.5" y1="184.0" x2="56.0" y2="176.2"/><line x1="16.0" y1="148.5" x2="23.8" y2="144.0"/><line x1="3.0" y1="100.0" x2="12.0" y2="100.0"/><line x1="16.0" y1="51.5" x2="23.8" y2="56.0"/><line x1="51.5" y1="16.0" x2="56.0" y2="23.8"/></g>
+          <g transform="translate(100,104) scale(1.08)">
+            <path d="M0,-58 C 7,-48 11,-42 11,-34 C 11,-26 6,-21 0,-21 C -6,-21 -11,-26 -11,-34 C -11,-42 -7,-48 0,-58 Z" fill="#c19a51"/>
+            <path d="M0,-49 C 4,-42 6,-38 6,-33 C 6,-28 3,-25 0,-25 C -3,-25 -6,-28 -6,-33 C -6,-38 -4,-42 0,-49 Z" fill="#1a1712"/>
+            <path d="M-40,-8 C -27,-15 -10,-15 0,-10 C 10,-15 27,-15 40,-8 L40,26 C 27,19 10,19 0,25 C -10,19 -27,19 -40,26 Z" fill="#c19a51"/>
+            <path d="M0,-10 L0,25" stroke="#1a1712" stroke-width="2.4" fill="none"/>
+          </g>
+        </svg>
+      </button>
+      <p class="m-vault-hint">Click the vault to open the Compendium</p>
+    </div>
+  </section>
+</div>
+
+<!-- ===== HEADER ===== -->
+<header class="app-header">
+  <div class="brand">
+    <h1 class="serif">Compendium <span class="of">of Truth</span></h1>
+  </div>
+  <div class="lock-pill closed" id="lockStatus" onclick="requestUnlock()">🔒 Locked</div>
+</header>
+<div class="cloud-status local" id="cloudStatus">● Local mode</div>
+
+<!-- ===== QUOTES SCREEN ===== -->
+<main class="screen" id="screen-quotes">
+  <div class="feature-card" id="featureCard"></div>
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <input type="text" id="search" placeholder="Search quotes, authors, tags…" oninput="render()">
+  </div>
+  <div class="chip-scroll" id="catFilter"></div>
+  <div class="list-meta" id="statBar"></div>
+  <div class="q-list" id="grid"></div>
+  <div class="empty-state" id="empty" style="display:none"></div>
+</main>
+
+<!-- ===== BOOKS SCREEN ===== -->
+<main class="screen hidden" id="screen-books">
+  <div class="screen-title serif">Book Recommendations</div>
+  <div class="screen-sub">A reading list — the books worth returning to.</div>
+  <div class="book-grid" id="bookGrid"></div>
+  <div class="empty-state" id="bookEmpty" style="display:none">No books yet.<br>Tap <strong>＋</strong> to add the first.</div>
+</main>
+
+<!-- ===== CONTRIBUTORS SCREEN ===== -->
+<main class="screen hidden" id="screen-contributors">
+  <div class="screen-title serif">Contributors</div>
+  <div class="screen-sub">The hands that helped gather this truth.</div>
+  <div class="contrib-wrap" id="contribList"></div>
+  <div class="empty-state" id="contribEmpty" style="display:none">No contributors listed yet.</div>
+</main>
+
+<!-- ===== FAB ===== -->
+<button class="fab" id="fab" onclick="fabAction()" aria-label="Add">＋</button>
+
+<!-- ===== BOTTOM NAV ===== -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-nav="quotes" onclick="switchTab('quotes')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+    <span class="nav-label">Quotes</span>
+  </button>
+  <button class="nav-item" data-nav="books" onclick="switchTab('books')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v15l-5-3-5 3V5z"/><path d="M17 3h1a2 2 0 0 1 2 2v13"/></svg>
+    <span class="nav-label">Books</span>
+  </button>
+  <button class="nav-item" data-nav="contributors" onclick="switchTab('contributors')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>
+    <span class="nav-label">People</span>
+  </button>
+  <button class="nav-item" data-nav="menu" onclick="openMenu()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+    <span class="nav-label">More</span>
+  </button>
+</nav>
+
+<!-- ===== QUOTE ACTION SHEET ===== -->
+<div class="overlay" id="actionOverlay">
+  <div class="sheet action-sheet">
+    <div class="sheet-handle"></div>
+    <div class="as-quote" id="asQuote"></div>
+    <button class="action-row" id="asFav" onclick="asFavorite()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 17.3 6.2 20l1.1-6.3L2.6 9.2l6.4-.9L12 2.5l3 5.8 6.4.9-4.7 4.5 1.1 6.3z"/></svg><span id="asFavLabel">Add to Favorites</span></button>
+    <button class="action-row" onclick="asEdit()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Edit</button>
+    <button class="action-row" onclick="shareAsImage()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>Share as Image</button>
+    <button class="action-row" onclick="asShare()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Share / Copy Text</button>
+    <button class="action-row danger" onclick="asDelete()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6"/></svg>Delete</button>
+  </div>
+</div>
+
+<!-- ===== SHARE IMAGE PREVIEW ===== -->
+<div class="overlay" id="imgOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Share as Image</h2>
+    <div class="img-preview-wrap"><img id="imgPreview" alt="Quote image preview"></div>
+    <div class="img-style-row" id="imgStyleRow">
+      <button class="img-style active" data-style="dark" onclick="pickImgStyle('dark')">Ink</button>
+      <button class="img-style" data-style="parchment" onclick="pickImgStyle('parchment')">Parchment</button>
+      <button class="img-style" data-style="gold" onclick="pickImgStyle('gold')">Gold</button>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" onclick="closeImgModal()">Close</button>
+      <button class="btn btn-primary" id="imgShareBtn" onclick="doImageShare()">Share</button>
+    </div>
+    <p class="img-hint">Tip: “Share” opens your phone’s share sheet — choose Instagram Stories. Or “Save Image” downloads it to your camera roll to post anytime.</p>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="doImageDownload()">Save Image</button>
+  </div>
+</div>
+<canvas id="quoteCanvas" width="1080" height="1920" style="display:none"></canvas>
+
+<!-- ===== QUOTE MODAL ===== -->
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2 id="modalTitle">Add a Quote</h2>
+    <input type="hidden" id="editId">
+    <div class="field"><label>Quote</label><textarea id="fQuote" placeholder="The words of truth…"></textarea></div>
+    <div class="field"><label>Author / Attribution</label><input type="text" id="fAuthor" placeholder="e.g. C.S. Lewis, Solomon, my dad"></div>
+    <div class="field"><label>Source (optional)</label><input type="text" id="fSource" placeholder="e.g. Mere Christianity, Proverbs 9:10"></div>
+    <div class="field"><label>Categories — select all that apply</label><div class="cat-picker" id="catPicker"></div></div>
+    <div class="field"><label>Custom Tags (comma separated)</label><input type="text" id="fTags" placeholder="e.g. discipline, courage"></div>
+    <div class="field"><label>Personal Note (optional)</label><textarea id="fNote" placeholder="Why this matters, how it applies…"></textarea></div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveQuote()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BOOK MODAL ===== -->
+<div class="overlay" id="bookOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2 id="bookModalTitle">Add a Book</h2>
+    <input type="hidden" id="bookEditId">
+    <div class="field"><label>Title</label><input type="text" id="bTitle" placeholder="e.g. Mere Christianity"></div>
+    <div class="field"><label>Author</label><input type="text" id="bAuthor" placeholder="e.g. C.S. Lewis"></div>
+    <div class="field"><label>Category (optional)</label><input type="text" id="bCat" placeholder="e.g. Theology, Apologetics"><div class="hint">Comma-separated. Shown on the preview.</div></div>
+    <div class="field"><label>Cover Image URL (optional)</label><input type="text" id="bCover" placeholder="Paste a link to the cover image"><div class="hint">Long-press a cover on Amazon/Goodreads → “Copy image address.” Blank = placeholder.</div></div>
+    <div class="field"><label>Purchase / Info Link (optional)</label><input type="text" id="bLink" placeholder="Amazon or publisher page"></div>
+    <div class="field"><label>Why it matters (optional)</label><textarea id="bNote" placeholder="A line on why this belongs…"></textarea></div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" onclick="closeBookModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBook()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CONTRIBUTOR MODAL ===== -->
+<div class="overlay" id="contribOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2 id="contribModalTitle">Add a Contributor</h2>
+    <input type="hidden" id="contribEditId">
+    <div class="field"><label>Name</label><input type="text" id="cName" placeholder="e.g. Ryan Wyatt"></div>
+    <div class="field"><label>Role / Title (optional)</label><input type="text" id="cRole" placeholder="e.g. Founder, Dad, Pastor"></div>
+    <div class="field">
+      <label>Photo (optional)</label>
+      <div class="photo-upload" id="photoUploadBox" onclick="document.getElementById('cPhotoFile').click()">
+        <img id="cPhotoPreview" style="display:none">
+        <div id="cPhotoPlaceholder" class="photo-ph">📷 Tap to upload a photo</div>
+      </div>
+      <input type="file" id="cPhotoFile" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
+      <input type="hidden" id="cPhoto">
+      <div class="hint">Or <span class="link-btn" onclick="pastePhotoUrl()">paste an image link</span> instead. Photos are shrunk automatically.</div>
+    </div>
+    <div class="field"><label>Connect Link (optional)</label><input type="text" id="cLink" placeholder="Website, Instagram, LinkedIn…"></div>
+    <div class="field"><label>Credit quotes by author name (optional)</label><input type="text" id="cMatch" placeholder="e.g. Ryan Wyatt — matches quote authors"><div class="hint">If a quote's author matches this, it counts toward their total. Defaults to the name above.</div></div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" onclick="closeContribModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveContrib()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BOOK PREVIEW POPUP ===== -->
+<div class="overlay" id="bookPreviewOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div id="bpCoverSlot"></div>
+    <div class="bp-title" id="bpTitle"></div>
+    <div class="bp-author" id="bpAuthor"></div>
+    <div class="bp-cat" id="bpCat"></div>
+    <div class="bp-desc" id="bpDesc"></div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" onclick="closeBookPreview()">Close</button>
+      <a class="btn btn-primary" id="bpLink" href="#" target="_blank" rel="noopener" style="text-align:center;text-decoration:none;line-height:1.4">Find it →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MORE MENU ===== -->
+<div class="overlay" id="menuOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>More</h2>
+    <div class="menu-list">
+      <button class="menu-row" onclick="closeMenu(); openMission()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>Our Mission</button>
+      <button class="menu-row" onclick="closeMenu(); printBook()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>Print Book (PDF)</button>
+      <button class="menu-row" onclick="closeMenu(); exportData()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>Backup (download)</button>
+      <button class="menu-row" onclick="closeMenu(); document.getElementById('importFile').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 15V3m0 0 4 4m-4-4L8 7M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>Restore (merge a backup)</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  FIREBASE SETUP
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyAl9sWfzEmwlaMbHL7RE0u7vmMyk0C0OwQ",
+  authDomain: "compendium-of-truth.firebaseapp.com",
+  databaseURL: "https://compendium-of-truth-default-rtdb.firebaseio.com",
+  projectId: "compendium-of-truth",
+  storageBucket: "compendium-of-truth.firebasestorage.app",
+  messagingSenderId: "837771934864",
+  appId: "1:837771934864:web:761b732ddbc4a5e48eac15",
+  measurementId: "G-CH18MPG4N6"
+};
+// ============================================================
+
+const STORE_KEY = 'compendium_of_truth_v1';
+const DEFAULT_CATS = [
+  "Wisdom","Truth","Biblical Convictions","Theology","Apologetics",
+  "Judeo-Christian Values","Philosophy","Practical Advice","Business","Education",
+  "Relationships","Marriage","Manhood","Learning Skills",
+  "Primitive Survival","Hunting","US Constitution & Forefathers","From My Dad"
+];
+
+let data = { quotes: [], cats: [...DEFAULT_CATS], books: [], contributors: [] };
+let activeFilter = null;
+let pickedCats = new Set();
+let activeTab = 'quotes';
+let currentActionId = null;
+
+const CLOUD = !!firebaseConfig.databaseURL;
+let dbRef = null;
+
+function initStorage() {
+  if (CLOUD) {
+    try {
+      firebase.initializeApp(firebaseConfig);
+      dbRef = firebase.database().ref('compendium');
+      dbRef.on('value', snap => {
+        const val = snap.val();
+        if (val) {
+          data.quotes = val.quotes ? Object.values(val.quotes) : [];
+          data.cats = val.cats && val.cats.length ? val.cats : [...DEFAULT_CATS];
+          data.books = val.books ? Object.values(val.books) : [];
+          data.contributors = val.contributors ? Object.values(val.contributors) : [];
+          data.quotes.sort((a,b) => (b.added||'').localeCompare(a.added||''));
+          data.books.sort((a,b) => (a.title||'').localeCompare(b.title||''));
+          data.contributors.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+        } else {
+          data = { quotes: [], cats: [...DEFAULT_CATS], books: [], contributors: [] };
+        }
+        setCloudStatus(true);
+        render();
+      }, err => { console.error(err); setCloudStatus(false, 'Connection issue — check database rules.'); });
+      return;
+    } catch(e) { console.error('Firebase init failed, local fallback:', e); }
+  }
+  loadLocal(); setCloudStatus(false); render();
+}
+function loadLocal() { try { const raw = localStorage.getItem(STORE_KEY); if (raw) data = JSON.parse(raw); } catch(e) {} }
+
+function save() {
+  if (CLOUD && dbRef) {
+    const quotesObj = {}; data.quotes.forEach(q => quotesObj[q.id] = q);
+    const booksObj = {}; (data.books||[]).forEach(b => booksObj[b.id] = b);
+    const contribObj = {}; (data.contributors||[]).forEach(c => contribObj[c.id] = c);
+    dbRef.set({ quotes: quotesObj, cats: data.cats, books: booksObj, contributors: contribObj })
+      .catch(err => alert('Could not save to the cloud: ' + err.message));
+  } else {
+    localStorage.setItem(STORE_KEY, JSON.stringify(data));
+  }
+}
+
+function setCloudStatus(on, msg) {
+  const el = document.getElementById('cloudStatus'); if (!el) return;
+  if (!CLOUD) { el.textContent = '● Local mode — this device only'; el.className = 'cloud-status local'; return; }
+  if (on) { el.textContent = '● Live — synced across all devices'; el.className = 'cloud-status on'; }
+  else { el.textContent = '● ' + (msg || 'Offline'); el.className = 'cloud-status off'; }
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function esc(s) { return (s||'').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+
+// ---- Password ----
+const EDIT_PASSWORD = "TRUTHWINS";
+let unlocked = false;
+function ensureUnlocked() {
+  if (unlocked) return true;
+  const entry = prompt("Enter the editing password to add or change entries:");
+  if (entry === null) return false;
+  if (entry === EDIT_PASSWORD) { unlocked = true; setLockStatus(); return true; }
+  alert("That password isn't right. Viewing is still open to everyone.");
+  return false;
+}
+function requestUnlock() { if (!unlocked) ensureUnlocked(); }
+function setLockStatus() {
+  const el = document.getElementById('lockStatus'); if (!el) return;
+  el.innerHTML = unlocked ? '🔓 Unlocked' : '🔒 Locked';
+  el.className = 'lock-pill ' + (unlocked ? 'open' : 'closed');
+}
+
+// ---- Tabs ----
+function switchTab(tab) {
+  if (tab === 'menu') { openMenu(); return; }
+  activeTab = tab;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.nav === tab));
+  ['quotes','books','contributors'].forEach(s => {
+    document.getElementById('screen-' + s).classList.toggle('hidden', s !== tab);
+  });
+  document.getElementById('fab').style.display = 'flex';
+  window.scrollTo(0,0);
+}
+function fabAction() {
+  if (activeTab === 'quotes') openModal();
+  else if (activeTab === 'books') openBookModal();
+  else if (activeTab === 'contributors') openContribModal();
+}
+
+// ---- Quote modal ----
+function openModal(id) {
+  if (!ensureUnlocked()) return;
+  document.getElementById('overlay').classList.add('show');
+  pickedCats = new Set();
+  if (id) {
+    const q = data.quotes.find(x => x.id === id);
+    document.getElementById('modalTitle').textContent = 'Edit Quote';
+    document.getElementById('editId').value = q.id;
+    document.getElementById('fQuote').value = q.text;
+    document.getElementById('fAuthor').value = q.author || '';
+    document.getElementById('fSource').value = q.source || '';
+    document.getElementById('fTags').value = (q.tags || []).join(', ');
+    document.getElementById('fNote').value = q.note || '';
+    (q.cats || []).forEach(c => pickedCats.add(c));
+  } else {
+    document.getElementById('modalTitle').textContent = 'Add a Quote';
+    ['editId','fQuote','fAuthor','fSource','fTags','fNote'].forEach(i => document.getElementById(i).value = '');
+  }
+  renderCatPicker();
+}
+function closeModal() { document.getElementById('overlay').classList.remove('show'); }
+
+function renderCatPicker() {
+  const el = document.getElementById('catPicker'); el.innerHTML = '';
+  data.cats.forEach(c => {
+    const chip = document.createElement('span');
+    chip.className = 'chip' + (pickedCats.has(c) ? ' active' : '');
+    chip.textContent = c;
+    chip.onclick = () => { pickedCats.has(c) ? pickedCats.delete(c) : pickedCats.add(c); renderCatPicker(); };
+    el.appendChild(chip);
+  });
+  const add = document.createElement('span');
+  add.className = 'chip'; add.textContent = '＋ new';
+  add.onclick = () => {
+    const name = prompt('New category name:');
+    if (name && name.trim() && !data.cats.includes(name.trim())) { data.cats.push(name.trim()); pickedCats.add(name.trim()); save(); renderCatPicker(); }
+  };
+  el.appendChild(add);
+}
+
+function saveQuote() {
+  const text = document.getElementById('fQuote').value.trim();
+  if (!text) { alert('Please enter the quote.'); return; }
+  const tags = document.getElementById('fTags').value.split(',').map(t => t.trim()).filter(Boolean);
+  const id = document.getElementById('editId').value;
+  const payload = {
+    text,
+    author: document.getElementById('fAuthor').value.trim(),
+    source: document.getElementById('fSource').value.trim(),
+    cats: [...pickedCats], tags,
+    note: document.getElementById('fNote').value.trim(),
+  };
+  if (id) { Object.assign(data.quotes.find(x => x.id === id), payload); }
+  else { payload.id = uid(); payload.fav = false; payload.added = new Date().toISOString(); data.quotes.unshift(payload); }
+  save(); closeModal(); render();
+}
+
+// ---- Action sheet (tap a quote) ----
+function openActionSheet(id) {
+  currentActionId = id;
+  const q = data.quotes.find(x => x.id === id);
+  document.getElementById('asQuote').textContent = '“' + q.text + '”';
+  document.getElementById('asFavLabel').textContent = q.fav ? 'Remove from Favorites' : 'Add to Favorites';
+  document.getElementById('actionOverlay').classList.add('show');
+}
+function closeActionSheet() { document.getElementById('actionOverlay').classList.remove('show'); }
+function asFavorite() { if (!ensureUnlocked()) return; const q = data.quotes.find(x => x.id === currentActionId); q.fav = !q.fav; save(); closeActionSheet(); render(); }
+function asEdit() { const id = currentActionId; closeActionSheet(); openModal(id); }
+function asDelete() {
+  if (!ensureUnlocked()) return;
+  if (confirm('Remove this quote from the Compendium?')) {
+    data.quotes = data.quotes.filter(x => x.id !== currentActionId);
+    save(); closeActionSheet(); render();
+  }
+}
+function asShare() {
+  const q = data.quotes.find(x => x.id === currentActionId);
+  let txt = '“' + q.text + '”';
+  if (q.author) txt += '\n— ' + q.author;
+  if (q.source) txt += ', ' + q.source;
+  if (navigator.share) { navigator.share({ text: txt }).catch(()=>{}); }
+  else if (navigator.clipboard) { navigator.clipboard.writeText(txt).then(()=> alert('Quote copied to clipboard.')); }
+  else { alert(txt); }
+  closeActionSheet();
+}
+
+// ---- Shareable image (Instagram Story 1080x1920) ----
+let imgStyle = 'dark';
+let imgBlob = null;
+function shareAsImage() {
+  closeActionSheet();
+  imgStyle = 'dark';
+  document.querySelectorAll('.img-style').forEach(b => b.classList.toggle('active', b.dataset.style === 'dark'));
+  document.getElementById('imgOverlay').classList.add('show');
+  drawQuoteImage();
+}
+function closeImgModal() { document.getElementById('imgOverlay').classList.remove('show'); }
+function pickImgStyle(s) {
+  imgStyle = s;
+  document.querySelectorAll('.img-style').forEach(b => b.classList.toggle('active', b.dataset.style === s));
+  drawQuoteImage();
+}
+
+function wrapText(ctx, text, maxWidth) {
+  const words = text.split(' ');
+  const lines = []; let line = '';
+  for (const w of words) {
+    const test = line ? line + ' ' + w : w;
+    if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = w; }
+    else line = test;
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+function drawSeal(ctx, cx, cy, r, fg, inner) {
+  // outer ring
+  ctx.strokeStyle = fg; ctx.lineWidth = r * 0.07;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+  const s = r / 62; // scale relative to original 62-ish design
+  ctx.save(); ctx.translate(cx, cy + r*0.06); ctx.scale(s*0.62, s*0.62);
+  // flame
+  ctx.fillStyle = fg;
+  ctx.beginPath();
+  ctx.moveTo(0,-58);
+  ctx.bezierCurveTo(7,-48,11,-42,11,-34);
+  ctx.bezierCurveTo(11,-26,6,-21,0,-21);
+  ctx.bezierCurveTo(-6,-21,-11,-26,-11,-34);
+  ctx.bezierCurveTo(-11,-42,-7,-48,0,-58);
+  ctx.closePath(); ctx.fill();
+  // inner flame
+  ctx.fillStyle = inner;
+  ctx.beginPath();
+  ctx.moveTo(0,-49);
+  ctx.bezierCurveTo(4,-42,6,-38,6,-33);
+  ctx.bezierCurveTo(6,-28,3,-25,0,-25);
+  ctx.bezierCurveTo(-3,-25,-6,-28,-6,-33);
+  ctx.bezierCurveTo(-6,-38,-4,-42,0,-49);
+  ctx.closePath(); ctx.fill();
+  // book
+  ctx.fillStyle = fg;
+  ctx.beginPath();
+  ctx.moveTo(-40,-8);
+  ctx.bezierCurveTo(-27,-15,-10,-15,0,-10);
+  ctx.bezierCurveTo(10,-15,27,-15,40,-8);
+  ctx.lineTo(40,26);
+  ctx.bezierCurveTo(27,19,10,19,0,25);
+  ctx.bezierCurveTo(-10,19,-27,19,-40,26);
+  ctx.closePath(); ctx.fill();
+  // spine
+  ctx.strokeStyle = inner; ctx.lineWidth = 2.4;
+  ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(0,25); ctx.stroke();
+  ctx.restore();
+}
+
+function drawQuoteImage() {
+  const q = data.quotes.find(x => x.id === currentActionId);
+  const canvas = document.getElementById('quoteCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = 1080, H = 1920;
+
+  // palette per style
+  let bg, bg2, fg, accent, sealInner;
+  if (imgStyle === 'dark') { bg = '#2b2620'; bg2 = '#3a3428'; fg = '#f5f0e6'; accent = '#c19a51'; sealInner = '#2b2620'; }
+  else if (imgStyle === 'parchment') { bg = '#f5f0e6'; bg2 = '#ece4d3'; fg = '#2b2620'; accent = '#a8863f'; sealInner = '#f5f0e6'; }
+  else { bg = '#1a2230'; bg2 = '#26303f'; fg = '#e9dcc0'; accent = '#c9a24b'; sealInner = '#1a2230'; }
+
+  // background gradient
+  const g = ctx.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,bg2); g.addColorStop(1,bg);
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
+  // subtle border frame
+  ctx.strokeStyle = accent; ctx.globalAlpha = 0.35; ctx.lineWidth = 3;
+  ctx.strokeRect(60,60,W-120,H-120);
+  ctx.globalAlpha = 1;
+
+  // big decorative quote mark
+  ctx.fillStyle = accent; ctx.globalAlpha = 0.22;
+  ctx.font = '700 340px Georgia, serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('\u201C', 100, 430);
+  ctx.globalAlpha = 1;
+
+  // quote text — auto-size to fit
+  const maxW = W - 240;
+  let fontSize = 78;
+  const text = q.text;
+  let lines;
+  ctx.textAlign = 'center';
+  do {
+    ctx.font = '500 ' + fontSize + 'px Georgia, serif';
+    lines = wrapText(ctx, text, maxW);
+    if (lines.length * fontSize * 1.32 <= 900 || fontSize <= 40) break;
+    fontSize -= 4;
+  } while (true);
+
+  const lineH = fontSize * 1.34;
+  const blockH = lines.length * lineH;
+  let y = H/2 - blockH/2 - 40;
+  ctx.fillStyle = fg;
+  lines.forEach(ln => { ctx.fillText(ln, W/2, y); y += lineH; });
+
+  // attribution
+  y += 30;
+  if (q.author) {
+    ctx.font = 'italic 44px Georgia, serif';
+    ctx.fillStyle = accent;
+    ctx.fillText('— ' + q.author, W/2, y);
+    y += 60;
+    if (q.source) {
+      ctx.font = '34px Georgia, serif';
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.7;
+      ctx.fillText(q.source, W/2, y);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // domain at bottom
+  ctx.font = '600 40px Georgia, serif';
+  ctx.fillStyle = accent; ctx.textAlign = 'center';
+  ctx.fillText('compendiumoftruth.com', W/2, H - 170);
+
+  // to preview + blob
+  const dataUrl = canvas.toDataURL('image/png');
+  document.getElementById('imgPreview').src = dataUrl;
+  canvas.toBlob(b => { imgBlob = b; }, 'image/png');
+}
+
+function doImageShare() {
+  const canvas = document.getElementById('quoteCanvas');
+  canvas.toBlob(async (blob) => {
+    const file = new File([blob], 'compendium-quote.png', { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: 'Compendium of Truth' }); }
+      catch(e) { /* user cancelled — do nothing */ }
+    } else {
+      doImageDownload();
+      if (location.protocol !== 'https:') {
+        alert('Saved to your photos. (To share straight to Instagram/Messages, the site needs to load over https:// — see the site settings.)');
+      } else {
+        alert('Saved to your photos. Open Instagram or Messages and attach it.');
+      }
+    }
+  }, 'image/png');
+}
+function doImageDownload() {
+  const canvas = document.getElementById('quoteCanvas');
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = 'compendium-quote.png';
+  a.click();
+}
+
+function setFilter(c) { activeFilter = (activeFilter === c) ? null : c; render(); }
+
+// ---- Render ----
+function render() {
+  renderFeature();
+  renderBooks();
+  renderContribs();
+  setLockStatus();
+  const search = document.getElementById('search').value.toLowerCase().trim();
+
+  const cf = document.getElementById('catFilter'); cf.innerHTML = '';
+  const allChip = document.createElement('span');
+  allChip.className = 'chip' + (activeFilter === null ? ' active' : '');
+  allChip.innerHTML = 'All <span class="count">' + data.quotes.length + '</span>';
+  allChip.onclick = () => setFilter(null); cf.appendChild(allChip);
+
+  const favCount = data.quotes.filter(q => q.fav).length;
+  const favChip = document.createElement('span');
+  favChip.className = 'chip' + (activeFilter === '__fav__' ? ' active' : '');
+  favChip.innerHTML = '★ Favorites <span class="count">' + favCount + '</span>';
+  favChip.onclick = () => setFilter('__fav__'); cf.appendChild(favChip);
+
+  data.cats.forEach(c => {
+    const n = data.quotes.filter(q => (q.cats||[]).includes(c)).length;
+    if (n === 0 && activeFilter !== c) return;
+    const chip = document.createElement('span');
+    chip.className = 'chip' + (activeFilter === c ? ' active' : '');
+    chip.innerHTML = esc(c) + ' <span class="count">' + n + '</span>';
+    chip.onclick = () => setFilter(c); cf.appendChild(chip);
+  });
+
+  let list = data.quotes.slice();
+  if (activeFilter === '__fav__') list = list.filter(q => q.fav);
+  else if (activeFilter) list = list.filter(q => (q.cats||[]).includes(activeFilter));
+  if (search) list = list.filter(q =>
+    (q.text + ' ' + (q.author||'') + ' ' + (q.source||'') + ' ' + (q.tags||[]).join(' ') + ' ' + (q.cats||[]).join(' ') + ' ' + (q.note||'')).toLowerCase().includes(search));
+
+  document.getElementById('statBar').textContent =
+    data.quotes.length + ' quote' + (data.quotes.length!==1?'s':'') + ' gathered · ' + data.cats.length + ' fields';
+
+  const grid = document.getElementById('grid'); const empty = document.getElementById('empty');
+  grid.innerHTML = '';
+  if (list.length === 0) {
+    empty.style.display = 'block';
+    empty.innerHTML = data.quotes.length === 0 ? 'No quotes yet.<br>Tap <strong>＋</strong> to begin your collection.' : 'No quotes match your search.';
+    return;
+  }
+  empty.style.display = 'none';
+
+  list.forEach(q => {
+    const card = document.createElement('div');
+    card.className = 'quote-card';
+    card.onclick = () => openActionSheet(q.id);
+    let html = '';
+    if (q.fav) html += '<span class="qc-fav">★</span>';
+    html += '<div class="qc-text">' + esc(q.text) + '</div>';
+    if (q.author || q.source) {
+      html += '<div class="qc-attr">' + esc(q.author || 'Unknown');
+      if (q.source) html += '<span class="qc-src">' + esc(q.source) + '</span>';
+      html += '</div>';
+    }
+    const chips = [...(q.cats||[]), ...(q.tags||[])];
+    if (chips.length) html += '<div class="qc-tags">' + chips.map(t => '<span class="qc-tag">' + esc(t) + '</span>').join('') + '</div>';
+    if (q.note) html += '<div class="qc-note">' + esc(q.note) + '</div>';
+    card.innerHTML = html;
+    grid.appendChild(card);
+  });
+}
+
+function renderFeature() {
+  const fc = document.getElementById('featureCard');
+  if (!data.quotes.length) { fc.innerHTML = '<div class="fc-label">Quote of the Day</div><div class="fc-empty">Your library of truth begins here. Tap ＋ to add the first quote.</div>'; return; }
+  const q = quoteOfTheDay();
+  let html = '<div class="fc-label">Quote of the Day</div><div class="fc-text">“' + esc(q.text) + '”</div>';
+  if (q.author) html += '<div class="fc-attr">— ' + esc(q.author) + (q.source ? ', ' + esc(q.source) : '') + '</div>';
+  fc.innerHTML = html;
+  fc.onclick = () => openActionSheet(q.id);
+}
+
+// Deterministic "random but no repeats until the list cycles" quote of the day.
+// Everyone sees the same quote on the same calendar day.
+function quoteOfTheDay() {
+  const n = data.quotes.length;
+  const dayNum = Math.floor(Date.now() / 86400000);     // days since epoch
+  const cycle = Math.floor(dayNum / n);                  // which full pass (each pass = n days)
+  const posInCycle = ((dayNum % n) + n) % n;             // 0..n-1 within this pass
+  // One shuffle per cycle. Because posInCycle walks 0..n-1 over the cycle's n days
+  // and the shuffle is a permutation, every quote appears exactly once before repeating.
+  const order = seededShuffle(n, cycle + 1);
+  return data.quotes[order[posInCycle]];
+}
+
+function seededShuffle(n, seed) {
+  const arr = Array.from({length: n}, (_, i) => i);
+  // simple seeded PRNG (mulberry32)
+  let s = seed >>> 0;
+  const rand = () => {
+    s |= 0; s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  for (let i = n - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ---- Books ----
+function openBookModal(id) {
+  if (!ensureUnlocked()) return;
+  document.getElementById('bookOverlay').classList.add('show');
+  if (id) {
+    const b = data.books.find(x => x.id === id);
+    document.getElementById('bookModalTitle').textContent = 'Edit Book';
+    document.getElementById('bookEditId').value = b.id;
+    document.getElementById('bTitle').value = b.title || '';
+    document.getElementById('bAuthor').value = b.author || '';
+    document.getElementById('bCat').value = b.cat || '';
+    document.getElementById('bCover').value = b.cover || '';
+    document.getElementById('bLink').value = b.link || '';
+    document.getElementById('bNote').value = b.note || '';
+  } else {
+    document.getElementById('bookModalTitle').textContent = 'Add a Book';
+    ['bookEditId','bTitle','bAuthor','bCat','bCover','bLink','bNote'].forEach(i => document.getElementById(i).value = '');
+  }
+}
+function closeBookModal() { document.getElementById('bookOverlay').classList.remove('show'); }
+function saveBook() {
+  const title = document.getElementById('bTitle').value.trim();
+  if (!title) { alert('Please enter the book title.'); return; }
+  const id = document.getElementById('bookEditId').value;
+  const payload = {
+    title, author: document.getElementById('bAuthor').value.trim(),
+    cat: document.getElementById('bCat').value.trim(),
+    cover: document.getElementById('bCover').value.trim(),
+    link: document.getElementById('bLink').value.trim(),
+    note: document.getElementById('bNote').value.trim(),
+  };
+  if (id) Object.assign(data.books.find(x => x.id === id), payload);
+  else { payload.id = uid(); payload.added = new Date().toISOString(); data.books.push(payload); }
+  save(); closeBookModal(); render();
+}
+function delBook(id) {
+  if (!ensureUnlocked()) return;
+  if (confirm('Remove this book from the list?')) { data.books = data.books.filter(x => x.id !== id); save(); render(); }
+}
+// soft glow color per book (rotates through warm tints)
+const BOOK_GLOWS = ['rgba(193,154,81,0.34)','rgba(180,120,90,0.30)','rgba(150,140,100,0.30)','rgba(170,150,110,0.32)'];
+function renderBooks() {
+  const grid = document.getElementById('bookGrid'); const empty = document.getElementById('bookEmpty');
+  grid.innerHTML = '';
+  if (!data.books || !data.books.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  data.books.forEach((b, i) => {
+    const card = document.createElement('div');
+    card.className = 'book-card';
+    const glow = BOOK_GLOWS[i % BOOK_GLOWS.length];
+    let html = '<div class="book-cover-wrap" style="--glow:' + glow + '">';
+    html += '<div class="book-edit-mini"><button onclick="openBookModal(\'' + b.id + '\')" title="Edit">✎</button><button onclick="delBook(\'' + b.id + '\')" title="Remove">✕</button></div>';
+    if (b.cover) html += '<img class="book-cover" src="' + esc(b.cover) + '" alt="" onerror="this.outerHTML=\'<div class=\\\'book-cover-ph\\\'>📖</div>\'">';
+    else html += '<div class="book-cover-ph">📖</div>';
+    html += '</div>';
+    html += '<div class="book-author"><span class="by">By</span> <b>' + esc(b.author || 'Unknown') + '</b></div>';
+    html += '<button class="book-preview-btn" onclick="openBookPreview(\'' + b.id + '\')">▶ Preview</button>';
+    card.innerHTML = html;
+    grid.appendChild(card);
+  });
+}
+function openBookPreview(id) {
+  const b = data.books.find(x => x.id === id);
+  const slot = document.getElementById('bpCoverSlot');
+  if (b.cover) slot.innerHTML = '<img class="bp-cover" src="' + esc(b.cover) + '" alt="" onerror="this.outerHTML=\'<div class=\\\'bp-cover-ph\\\'>📖</div>\'">';
+  else slot.innerHTML = '<div class="bp-cover-ph">📖</div>';
+  document.getElementById('bpTitle').textContent = b.title;
+  document.getElementById('bpAuthor').textContent = b.author ? 'by ' + b.author : '';
+  const cats = (b.cat || '').split(',').map(c => c.trim()).filter(Boolean);
+  document.getElementById('bpCat').innerHTML = cats.map(c => '<span>' + esc(c) + '</span>').join('');
+  const desc = document.getElementById('bpDesc');
+  if (b.note) { desc.textContent = b.note; desc.className = 'bp-desc'; }
+  else { desc.textContent = 'No description added yet.'; desc.className = 'bp-desc empty'; }
+  const link = document.getElementById('bpLink');
+  if (b.link) { link.href = b.link; link.style.display = 'block'; }
+  else { link.style.display = 'none'; }
+  document.getElementById('bookPreviewOverlay').classList.add('show');
+}
+function closeBookPreview() { document.getElementById('bookPreviewOverlay').classList.remove('show'); }
+
+// ---- Contributors ----
+// Shrinks an uploaded image to a small square-ish avatar stored as base64 text.
+function handlePhotoUpload(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 400;
+      let w = img.width, h = img.height;
+      if (w > h && w > MAX) { h = h * MAX / w; w = MAX; }
+      else if (h > MAX) { w = w * MAX / h; h = MAX; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
+      document.getElementById('cPhoto').value = dataUrl;
+      showPhotoPreview(dataUrl);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  ev.target.value = '';
+}
+function showPhotoPreview(src) {
+  const prev = document.getElementById('cPhotoPreview');
+  const ph = document.getElementById('cPhotoPlaceholder');
+  if (src) { prev.src = src; prev.style.display = 'block'; ph.style.display = 'none'; }
+  else { prev.style.display = 'none'; ph.style.display = 'block'; }
+}
+function pastePhotoUrl() {
+  const url = prompt('Paste the image link (URL):');
+  if (url && url.trim()) { document.getElementById('cPhoto').value = url.trim(); showPhotoPreview(url.trim()); }
+}
+function openContribModal(id) {
+  if (!ensureUnlocked()) return;
+  document.getElementById('contribOverlay').classList.add('show');
+  if (id) {
+    const c = data.contributors.find(x => x.id === id);
+    document.getElementById('contribModalTitle').textContent = 'Edit Contributor';
+    document.getElementById('contribEditId').value = c.id;
+    document.getElementById('cName').value = c.name || '';
+    document.getElementById('cRole').value = c.role || '';
+    document.getElementById('cPhoto').value = c.photo || '';
+    document.getElementById('cLink').value = c.link || '';
+    document.getElementById('cMatch').value = c.match || '';
+    showPhotoPreview(c.photo || '');
+  } else {
+    document.getElementById('contribModalTitle').textContent = 'Add a Contributor';
+    ['contribEditId','cName','cRole','cPhoto','cLink','cMatch'].forEach(i => document.getElementById(i).value = '');
+    showPhotoPreview('');
+  }
+}
+function closeContribModal() { document.getElementById('contribOverlay').classList.remove('show'); }
+function saveContrib() {
+  const name = document.getElementById('cName').value.trim();
+  if (!name) { alert('Please enter a name.'); return; }
+  const id = document.getElementById('contribEditId').value;
+  const payload = {
+    name,
+    role: document.getElementById('cRole').value.trim(),
+    photo: document.getElementById('cPhoto').value.trim(),
+    link: document.getElementById('cLink').value.trim(),
+    match: document.getElementById('cMatch').value.trim(),
+  };
+  if (id) { Object.assign(data.contributors.find(x => x.id === id), payload); }
+  else { payload.id = uid(); data.contributors.push(payload); }
+  save(); closeContribModal(); render();
+}
+function delContrib(id) {
+  if (!ensureUnlocked()) return;
+  if (confirm('Remove this contributor?')) { data.contributors = data.contributors.filter(x => x.id !== id); save(); render(); }
+}
+function contribQuoteCount(c) {
+  const needle = (c.match || c.name || '').toLowerCase().trim();
+  if (!needle) return 0;
+  return data.quotes.filter(q => (q.author||'').toLowerCase().includes(needle)).length;
+}
+function initials(name) {
+  return name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0].toUpperCase()).join('');
+}
+function renderContribs() {
+  const list = document.getElementById('contribList'); const empty = document.getElementById('contribEmpty');
+  list.innerHTML = '';
+  if (!data.contributors || !data.contributors.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  data.contributors.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'contrib-card';
+    const n = contribQuoteCount(c);
+    let html = '';
+    if (c.photo) html += '<img class="contrib-avatar" src="' + esc(c.photo) + '" alt="" onerror="this.outerHTML=\'<div class=\\\'contrib-avatar-ph\\\'>' + esc(initials(c.name)) + '</div>\'">';
+    else html += '<div class="contrib-avatar-ph">' + esc(initials(c.name)) + '</div>';
+    html += '<div class="contrib-body">';
+    html += '<div class="contrib-name">' + esc(c.name) + '</div>';
+    if (c.role) html += '<div class="contrib-role">' + esc(c.role) + '</div>';
+    html += '<div class="contrib-count">✍ ' + n + ' quote' + (n!==1?'s':'') + ' contributed</div>';
+    html += '<div class="contrib-actions">';
+    if (c.link) html += '<a class="contrib-connect" href="' + esc(c.link) + '" target="_blank" rel="noopener">Connect</a>';
+    html += '</div></div>';
+    html += '<div class="contrib-edit"><button onclick="openContribModal(\'' + c.id + '\')" title="Edit">✎</button><button onclick="delContrib(\'' + c.id + '\')" title="Remove">✕</button></div>';
+    card.innerHTML = html;
+    list.appendChild(card);
+  });
+}
+
+// ---- More menu ----
+function openMenu() { document.getElementById('menuOverlay').classList.add('show'); }
+function closeMenu() { document.getElementById('menuOverlay').classList.remove('show'); }
+
+// ---- Print book (unchanged logic) ----
+function printBook() {
+  if (data.quotes.length === 0) { alert('Add some quotes first — the book is empty.'); return; }
+  const dateStr = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const byCat = {}; const uncategorized = [];
+  data.quotes.forEach(q => {
+    if (q.cats && q.cats.length) q.cats.forEach(c => { (byCat[c] = byCat[c] || []).push(q); });
+    else uncategorized.push(q);
+  });
+  const orderedCats = data.cats.filter(c => byCat[c]);
+  Object.keys(byCat).forEach(c => { if (!orderedCats.includes(c)) orderedCats.push(c); });
+  const pe = s => (s||'').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+  let body = '<div class="toc"><h2>Contents</h2><ol>';
+  orderedCats.forEach(c => { body += '<li>' + pe(c) + ' <span class="dots"></span> <span class="cnt">' + byCat[c].length + '</span></li>'; });
+  if (uncategorized.length) body += '<li>Uncategorized <span class="dots"></span> <span class="cnt">' + uncategorized.length + '</span></li>';
+  body += '</ol></div>';
+  const renderSection = (title, quotes) => {
+    let s = '<section class="chapter"><h2 class="chapter-title">' + pe(title) + '</h2>';
+    quotes.forEach(q => {
+      s += '<div class="q"><p class="q-text">&ldquo;' + pe(q.text) + '&rdquo;</p>';
+      if (q.author || q.source) { s += '<p class="q-attr">— ' + pe(q.author || 'Unknown'); if (q.source) s += ', <span class="q-src">' + pe(q.source) + '</span>'; s += '</p>'; }
+      if (q.note) s += '<p class="q-note">' + pe(q.note) + '</p>';
+      s += '</div>';
+    });
+    return s + '</section>';
+  };
+  orderedCats.forEach(c => { body += renderSection(c, byCat[c]); });
+  if (uncategorized.length) body += renderSection('Uncategorized', uncategorized);
+  const doc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>The Compendium of Truth</title>
+<style>@page{margin:22mm 20mm}*{box-sizing:border-box}body{font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;color:#2b2620;line-height:1.6;margin:0}
+.cover{text-align:center;height:92vh;display:flex;flex-direction:column;justify-content:center;page-break-after:always}.cover .orn{color:#9a7b3f;font-size:1.5rem;letter-spacing:8px;margin:14px 0}.cover h1{font-size:3rem;color:#6b4f2a;margin:8px 0;font-weight:600}.cover .creed{max-width:520px;margin:26px auto 0;font-style:italic;color:#5a5245;font-size:1.05rem}.cover .date{margin-top:40px;color:#5a5245;font-size:.9rem}.cover .count{color:#9a7b3f;font-size:.95rem;margin-top:6px}
+.toc{page-break-after:always}.toc h2{color:#6b4f2a;border-bottom:2px solid #d9cfb8;padding-bottom:8px}.toc ol{list-style:none;padding:0;counter-reset:toc}.toc li{display:flex;align-items:baseline;padding:6px 0;counter-increment:toc}.toc li::before{content:counter(toc)". ";color:#9a7b3f;margin-right:8px}.toc .dots{flex:1;border-bottom:1px dotted #b8ac93;margin:0 6px;position:relative;top:-3px}.toc .cnt{color:#5a5245;font-size:.85rem}
+.chapter{page-break-before:always}.chapter-title{color:#6b4f2a;font-size:1.7rem;border-bottom:2px solid #d9cfb8;padding-bottom:10px;margin-bottom:22px}.q{margin:0 0 22px;padding-left:16px;border-left:3px solid #c19a51;page-break-inside:avoid}.q-text{font-size:1.08rem;margin:0 0 6px}.q-attr{text-align:right;font-style:italic;color:#5a5245;margin:0;font-size:.95rem}.q-src{font-style:normal;font-size:.88rem}.q-note{margin:8px 0 0;font-size:.85rem;color:#5a5245;border-top:1px dashed #d9cfb8;padding-top:6px}
+@media print{.noprint{display:none}}</style></head><body>
+<div class="noprint" style="text-align:center;padding:16px;background:#f4efe4;border-bottom:1px solid #d9cfb8">
+<button onclick="window.print()" style="font-family:inherit;font-size:1rem;padding:10px 22px;background:#9a7b3f;color:#fff;border:none;border-radius:8px;cursor:pointer">🖨 Print / Save as PDF</button>
+<p style="color:#5a5245;font-size:.82rem;margin:8px 0 0">In the print dialog, choose "Save as PDF" as the destination.</p></div>
+<div class="cover"><div class="orn">✦ ❦ ✦</div><h1>The Compendium<br>of Truth</h1><div class="orn">✦ ❦ ✦</div>
+<p class="creed">"All truth has God as its source; the entire body of knowledge is consistent with, and not contrary to, God's revelation."</p>
+<p class="date">Compiled ${dateStr}</p><p class="count">${data.quotes.length} quotes across ${orderedCats.length} fields of study</p></div>
+${body}</body></html>`;
+  const w = window.open('', '_blank');
+  if (!w) { alert('Please allow pop-ups to open the printable book.'); return; }
+  w.document.write(doc); w.document.close();
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'compendium-of-truth-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+function importData(ev) {
+  const file = ev.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported.quotes) throw new Error('bad file');
+      if (confirm('Merge ' + imported.quotes.length + ' quotes into your Compendium? (Duplicates skipped.)')) {
+        const ids = new Set(data.quotes.map(q => q.id));
+        imported.quotes.forEach(q => { if (!ids.has(q.id)) data.quotes.push(q); });
+        (imported.cats||[]).forEach(c => { if (!data.cats.includes(c)) data.cats.push(c); });
+        (imported.books||[]).forEach(b => { if (!data.books.find(x=>x.id===b.id)) data.books.push(b); });
+        (imported.contributors||[]).forEach(c => { if (!data.contributors.find(x=>x.id===c.id)) data.contributors.push(c); });
+        save(); render();
+      }
+    } catch(err) { alert('Could not read that file.'); }
+  };
+  reader.readAsText(file); ev.target.value = '';
+}
+
+// close sheets by tapping backdrop
+['overlay','bookOverlay','contribOverlay','menuOverlay','actionOverlay','imgOverlay','bookPreviewOverlay'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => { if (e.target.id === id) document.getElementById(id).classList.remove('show'); });
+});
+
+// ===== Mission scrollytelling =====
+const MISSION_SEEN_KEY = 'compendium_mission_seen_v1';
+function openMission() {
+  const m = document.getElementById('mission');
+  m.classList.add('show');
+  m.scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+  // reveal scenes as they scroll into view
+  const scenes = m.querySelectorAll('.m-scene');
+  const mio = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.35, root: m });
+  scenes.forEach(s => mio.observe(s));
+  // first scene visible immediately
+  setTimeout(() => scenes[0] && scenes[0].classList.add('visible'), 50);
+}
+function closeMission() {
+  document.getElementById('mission').classList.remove('show');
+  document.body.style.overflow = '';
+  try { localStorage.setItem(MISSION_SEEN_KEY, '1'); } catch(e) {}
+}
+function openVault(btn) {
+  // play the unlock animation, then enter
+  if (btn.classList.contains('opening')) return;
+  btn.classList.add('opening');
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  setTimeout(closeMission, reduce ? 0 : 820);
+}
+function maybeShowMissionOnFirstVisit() {
+  let seen = false;
+  try { seen = !!localStorage.getItem(MISSION_SEEN_KEY); } catch(e) {}
+  if (!seen) openMission();
+}
+
+setLockStatus();
+initStorage();
+maybeShowMissionOnFirstVisit();
+</script>
+</body>
+</html>
